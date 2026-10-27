@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Essensia Catalog</title>
+<meta name="theme-color" content="#0b63e5">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+:root{--blue:#0b63e5;--navy:#06236b;--sky:#e8f1ff;--bg:#f5f8fd;--card:#fff;--ink:#0f1b33;--mute:#62708a;--line:#dde5f2;--red:#d33;--ok:#14803c}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1220;--card:#131c30;--ink:#e8eefb;--mute:#97a6c4;--line:#24304a;--sky:#16264a}}
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:calc(76px + env(safe-area-inset-bottom));min-height:100vh}
+main{max-width:720px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 16px 24px}
+h1{font-size:1.5rem;letter-spacing:-.02em}h2{font-size:1.1rem;margin:20px 0 10px}
+p.sub{color:var(--mute);font-size:.9rem;margin-top:2px}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:16px}.top img{width:44px;height:44px;border-radius:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.item{padding:0;overflow:hidden;display:flex;flex-direction:column}
+.item .thumb{aspect-ratio:16/10;background:linear-gradient(135deg,var(--blue),var(--navy));display:grid;place-items:center;color:#fff;font-size:2rem;font-weight:700;background-size:cover;background-position:center}
+.item .b{padding:12px;display:flex;flex-direction:column;gap:6px;flex:1}.item h3{font-size:1rem}.item p{font-size:.85rem;color:var(--mute);flex:1}
+.tag{display:inline-block;font-size:.72rem;background:var(--sky);color:var(--blue);padding:2px 8px;border-radius:99px;width:fit-content}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat{background:var(--navy);color:#fff;border-radius:14px;padding:14px}.stat b{font-size:1.6rem;display:block}.stat span{font-size:.78rem;opacity:.8}
+label{display:block;font-size:.85rem;font-weight:600;margin:12px 0 4px}
+input,textarea,select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:var(--card);color:var(--ink)}
+input:focus,textarea:focus,select:focus,button:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+textarea{min-height:84px;resize:vertical}
+.btn{border:0;background:var(--blue);color:#fff;padding:11px 16px;border-radius:10px;font:inherit;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block;text-align:center}
+.btn.alt{background:var(--sky);color:var(--blue)}.btn.del{background:transparent;color:var(--red);padding:11px 8px}.btn.full{width:100%;margin-top:16px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>.grow{flex:1;min-width:0}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0 12px}.chip{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:6px 14px;border-radius:99px;white-space:nowrap;cursor:pointer;font:inherit;font-size:.85rem}.chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.empty{text-align:center;color:var(--mute);padding:36px 12px}.empty .btn{margin-top:12px}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav button{flex:1;border:0;background:none;color:var(--mute);padding:9px 2px 8px;font:inherit;font-size:.7rem;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+nav button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+nav button.on{color:var(--blue);font-weight:700}
+nav button.add{color:#fff}nav button.add span.pl{background:var(--blue);border-radius:14px;width:44px;height:36px;display:grid;place-items:center;margin-top:-18px;box-shadow:0 4px 12px rgba(11,99,229,.4)}
+.bar{height:8px;border-radius:9px;background:var(--sky);overflow:hidden;margin-top:6px}.bar i{display:block;height:100%;background:var(--blue)}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:.88rem;z-index:9}
+.err{color:var(--red);font-size:.85rem;margin-top:8px}.link{word-break:break-all;background:var(--sky);color:var(--blue);padding:10px;border-radius:10px;font-size:.88rem}
+.auth{max-width:380px;margin:8vh auto 0;text-align:center}.auth img{width:84px;border-radius:20px}.auth h1{margin-top:12px}
+.hide{display:none}
+</style>
+</head>
+<body>
+<main id="app"><div class="empty">Memuat…</div></main>
+<nav id="nav" class="hide"></nav>
+
+<script type="module">
+/* ============================================================
+   ESSENSIA CATALOG — semua fitur ada di file ini.
+   Update fitur cukup ubah index.html.
+   ============================================================ */
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,GoogleAuthProvider,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,collection,doc,getDoc,setDoc,addDoc,updateDoc,deleteDoc,getDocs,query,where,increment,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCdVM-CT6mp2sfSItwh18JDWlMOibBLa0Q",
+  authDomain: "catalogessensia.firebaseapp.com",
+  projectId: "catalogessensia",
+  storageBucket: "catalogessensia.firebasestorage.app",
+  messagingSenderId: "593110013671",
+  appId: "1:593110013671:web:47cfb7d0012310781bf442"
+};
+const fb = initializeApp(firebaseConfig), auth = getAuth(fb), db = getFirestore(fb);
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+
+/* ---------- util ---------- */
+const $ = s => document.querySelector(s), app = $('#app'), nav = $('#nav');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const slugify = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,30);
+const safeUrl = u => /^https?:\/\//i.test(u) ? u : '#';
+const base = () => location.origin + location.pathname;
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2200)}
+const S = {user:null, profile:null, items:[], tab:'beranda', editId:null};
+
+/* ---------- ikon & navigasi ---------- */
+const I = {
+  beranda:'<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  catalog:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+  tambah:'<path d="M12 5v14M5 12h14"/>',
+  engagement:'<path d="M3 20h18M6 16v-5M11 16V5M16 16v-8M21 16v-3"/>',
+  setting:'<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3.9a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.6a7 7 0 0 0-2 1.2l-2.3-.9-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-.9a7 7 0 0 0 2 1.2l.4 2.6h4l.4-2.6a7 7 0 0 0 2-1.2l2.3.9 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z"/>'
+};
+const TABS = [['beranda','Beranda'],['catalog','Catalog'],['tambah','Tambah'],['engagement','Engagement'],['setting','Setting']];
+function drawNav(){
+  nav.className = '';
+  nav.innerHTML = TABS.map(([k,l]) => k==='tambah'
+    ? `<button class="add" data-t="${k}" aria-label="Tambah catalog"><span class="pl"><svg viewBox="0 0 24 24">${I[k]}</svg></span><span style="color:${S.tab===k?'var(--blue)':'var(--mute)'}">${l}</span></button>`
+    : `<button class="${S.tab===k?'on':''}" data-t="${k}"><svg viewBox="0 0 24 24">${I[k]}</svg>${l}</button>`).join('');
+  nav.querySelectorAll('button').forEach(b => b.onclick = () => { S.tab = b.dataset.t; if(S.tab!=='tambah') S.editId=null; show(); });
+}
+
+/* ---------- data ---------- */
+async function loadItems(){
+  const q = await getDocs(query(collection(db,'catalogs'), where('uid','==',S.user.uid)));
+  S.items = q.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+}
+async function loadProfile(){
+  const s = await getDoc(doc(db,'users',S.user.uid));
+  S.profile = s.exists() ? s.data() : null;
+  if(!S.profile){
+    const name = S.user.displayName || S.user.email.split('@')[0];
+    S.profile = {name, bio:'', slug:'', views:0};
+    await setDoc(doc(db,'users',S.user.uid), S.profile);
+  }
+}
+const publicLink = () => S.profile.slug ? `${base()}?u=${S.profile.slug}` : '';
+
+/* ---------- login ---------- */
+function showAuth(msg=''){
+  nav.className='hide';
+  app.innerHTML = `<div class="auth"><img src="icons/icon-192.png" alt="">
+    <h1>Essensia Catalog</h1><p class="sub">Satu tempat untuk semua demo aplikasimu.</p>
+    <div style="text-align:left;margin-top:20px"><label for="em">Email</label><input id="em" type="email" autocomplete="email">
+    <label for="pw">Kata sandi</label><input id="pw" type="password" autocomplete="current-password" minlength="6">
+    <div class="err" id="err">${esc(msg)}</div>
+    <button class="btn full" id="login">Masuk</button>
+    <button class="btn alt full" id="reg" style="margin-top:8px">Buat akun baru</button>
+    <button class="btn alt full" id="goo" style="margin-top:8px">Masuk dengan Google</button></div></div>`;
+  const run = async fn => { try{ await fn() }catch(e){ $('#err').textContent = errMsg(e) } };
+  const cred = () => [$('#em').value.trim(), $('#pw').value];
+  $('#login').onclick = () => run(() => signInWithEmailAndPassword(auth,...cred()));
+  $('#reg').onclick = () => run(() => createUserWithEmailAndPassword(auth,...cred()));
+  $('#goo').onclick = () => run(() => signInWithPopup(auth,new GoogleAuthProvider()));
+}
+const errMsg = e => ({'auth/invalid-credential':'Email atau kata sandi salah.','auth/email-already-in-use':'Email sudah terdaftar. Coba masuk.','auth/weak-password':'Kata sandi minimal 6 karakter.','auth/invalid-email':'Format email tidak valid.','permission-denied':'Akses ditolak. Periksa Firestore Rules.'}[e.code] || e.message);
+
+/* ---------- halaman ---------- */
+const itemCard = (c, admin) => `<div class="card item"><div class="thumb" style="${c.image?`background-image:url('${esc(c.image)}')`:''}">${c.image?'':esc((c.title||'?')[0].toUpperCase())}</div>
+  <div class="b">${c.category?`<span class="tag">${esc(c.category)}</span>`:''}<h3>${esc(c.title)}</h3><p>${esc(c.desc)}</p>
+  ${admin ? `<div class="row"><a class="btn alt grow" href="${esc(safeUrl(c.url))}" target="_blank" rel="noopener">Buka</a><button class="btn alt" data-edit="${c.id}">Ubah</button><button class="btn del" data-del="${c.id}">Hapus</button></div>`
+          : `<button class="btn" data-open="${c.id}" data-url="${esc(safeUrl(c.url))}">Coba demo</button>`}</div></div>`;
+
+function pageBeranda(){
+  const clicks = S.items.reduce((a,c)=>a+(c.clicks||0),0);
+  return `<div class="top"><img src="icons/icon-192.png" alt=""><div><h1>Halo, ${esc(S.profile.name)}</h1><p class="sub">Ringkasan katalogmu</p></div></div>
+  <div class="stats"><div class="stat"><b>${S.items.length}</b><span>Catalog</span></div><div class="stat"><b>${S.profile.views||0}</b><span>Kunjungan</span></div><div class="stat"><b>${clicks}</b><span>Klik demo</span></div></div>
+  <h2>Link publik</h2>${S.profile.slug ? `<div class="card"><div class="link">${esc(publicLink())}</div><div class="row" style="margin-top:10px"><button class="btn grow" id="cp">Salin link</button><a class="btn alt" href="${esc(publicLink())}" target="_blank">Lihat</a></div></div>`
+    : `<div class="card empty" style="padding:20px">Link publik belum aktif.<br><button class="btn" data-go="setting">Atur di Setting</button></div>`}
+  <h2>Terbaru</h2>${S.items.length ? `<div class="grid">${S.items.slice(0,4).map(c=>itemCard(c,true)).join('')}</div>` : `<div class="card empty">Belum ada catalog.<br><button class="btn" data-go="tambah">Tambah catalog pertama</button></div>`}`;
+}
+function pageCatalog(){
+  return `<h1>Catalog</h1><p class="sub">${S.items.length} demo aplikasi</p><div style="height:14px"></div>` +
+    (S.items.length ? `<div class="grid">${S.items.map(c=>itemCard(c,true)).join('')}</div>` : `<div class="card empty">Belum ada catalog.<br><button class="btn" data-go="tambah">Tambah catalog</button></div>`);
+}
+function pageTambah(){
+  const c = S.items.find(x=>x.id===S.editId) || {};
+  return `<h1>${c.id?'Ubah catalog':'Tambah catalog'}</h1>
+  <label for="f-title">Nama aplikasi</label><input id="f-title" value="${esc(c.title)}" maxlength="60">
+  <label for="f-url">Link demo (https://…)</label><input id="f-url" type="url" value="${esc(c.url)}">
+  <label for="f-desc">Deskripsi singkat</label><textarea id="f-desc" maxlength="200">${esc(c.desc)}</textarea>
+  <label for="f-cat">Kategori</label><input id="f-cat" value="${esc(c.category)}" placeholder="Contoh: Bisnis, Game, Edukasi" maxlength="24">
+  <label for="f-img">Link gambar sampul (opsional)</label><input id="f-img" type="url" value="${esc(c.image)}">
+  <label for="f-pub">Tampilkan di halaman publik</label><select id="f-pub"><option value="1">Ya</option><option value="0" ${c.published===false?'selected':''}>Tidak (draf)</option></select>
+  <div class="err" id="err"></div><button class="btn full" id="save">${c.id?'Simpan perubahan':'Simpan catalog'}</button>`;
+}
+function pageEngagement(){
+  const arr = [...S.items].sort((a,b)=>(b.clicks||0)-(a.clicks||0)), max = Math.max(1,...arr.map(c=>c.clicks||0));
+  return `<h1>Engagement</h1><p class="sub">Seberapa sering demo dicoba pengunjung</p><div style="height:14px"></div>
+  <div class="stats" style="grid-template-columns:1fr 1fr"><div class="stat"><b>${S.profile.views||0}</b><span>Kunjungan halaman publik</span></div><div class="stat"><b>${arr.reduce((a,c)=>a+(c.clicks||0),0)}</b><span>Total klik demo</span></div></div>
+  <h2>Per aplikasi</h2>` + (arr.length ? arr.map(c=>`<div class="card"><div class="row"><b class="grow">${esc(c.title)}</b><span>${c.clicks||0} klik</span></div><div class="bar"><i style="width:${(c.clicks||0)/max*100}%"></i></div></div>`).join('') : `<div class="card empty">Data muncul setelah ada catalog dan pengunjung.</div>`);
+}
+function pageSetting(){
+  const p = S.profile;
+  return `<h1>Setting</h1>
+  <div class="card"><b>Akun</b><p class="sub">${esc(S.user.email)}</p></div>
+  <h2>Profil publik</h2>
+  <label for="s-name">Nama tampilan</label><input id="s-name" value="${esc(p.name)}" maxlength="40">
+  <label for="s-bio">Bio</label><textarea id="s-bio" maxlength="160">${esc(p.bio)}</textarea>
+  <label for="s-slug">Nama link (huruf kecil, angka, strip)</label><input id="s-slug" value="${esc(p.slug)}" placeholder="contoh: essensia" maxlength="30">
+  ${p.slug?`<p class="sub" style="margin-top:8px">Link: <span class="link" style="display:inline-block">${esc(publicLink())}</span></p>`:''}
+  <div class="err" id="err"></div><button class="btn full" id="saveS">Simpan setting</button>
+  ${p.slug?`<button class="btn alt full" id="cp" style="margin-top:8px">Salin link publik</button>`:''}
+  <button class="btn del full" id="out">Keluar</button>`;
+}
+
+/* ---------- render + aksi ---------- */
+const PAGES = {beranda:pageBeranda, catalog:pageCatalog, tambah:pageTambah, engagement:pageEngagement, setting:pageSetting};
+function show(){
+  drawNav(); app.innerHTML = PAGES[S.tab](); scrollTo(0,0);
+  app.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{S.tab=b.dataset.go;show()});
+  app.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>{S.editId=b.dataset.edit;S.tab='tambah';show()});
+  app.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{ if(!confirm('Hapus catalog ini?'))return; await deleteDoc(doc(db,'catalogs',b.dataset.del)); await loadItems(); show(); toast('Catalog dihapus') });
+  $('#cp')?.addEventListener('click',()=>navigator.clipboard.writeText(publicLink()).then(()=>toast('Link disalin')));
+  $('#out')?.addEventListener('click',()=>signOut(auth));
+  $('#save')?.addEventListener('click',saveItem);
+  $('#saveS')?.addEventListener('click',saveSetting);
+}
+async function saveItem(){
+  const v = id => $('#'+id).value.trim(), err = $('#err');
+  const data = {title:v('f-title'), url:v('f-url'), desc:v('f-desc'), category:v('f-cat'), image:v('f-img'), published:$('#f-pub').value==='1'};
+  if(!data.title) return err.textContent='Nama aplikasi wajib diisi.';
+  if(!/^https?:\/\//i.test(data.url)) return err.textContent='Link demo harus diawali http:// atau https://';
+  try{
+    if(S.editId) await updateDoc(doc(db,'catalogs',S.editId), data);
+    else await addDoc(collection(db,'catalogs'), {...data, uid:S.user.uid, clicks:0, createdAt:serverTimestamp()});
+    S.editId=null; await loadItems(); S.tab='catalog'; show(); toast('Catalog tersimpan');
+  }catch(e){ err.textContent = errMsg(e) }
+}
+async function saveSetting(){
+  const err=$('#err'), name=$('#s-name').value.trim(), bio=$('#s-bio').value.trim(), slug=slugify($('#s-slug').value);
+  if(!name) return err.textContent='Nama tampilan wajib diisi.';
+  try{
+    const old = S.profile.slug;
+    if(slug && slug!==old){
+      const ex = await getDoc(doc(db,'slugs',slug));
+      if(ex.exists() && ex.data().uid!==S.user.uid) return err.textContent='Nama link sudah dipakai. Coba yang lain.';
+      await setDoc(doc(db,'slugs',slug), {uid:S.user.uid});
+      if(old) await deleteDoc(doc(db,'slugs',old));
+    }
+    S.profile = {...S.profile, name, bio, slug: slug || old};
+    await setDoc(doc(db,'users',S.user.uid), S.profile, {merge:true});
+    show(); toast('Setting tersimpan');
+  }catch(e){ err.textContent = errMsg(e) }
+}
+
+/* ---------- halaman publik (tanpa login): ?u=nama-link ---------- */
+async function showPublic(slug){
+  nav.className='hide'; document.body.style.paddingBottom='24px';
+  try{
+    const s = await getDoc(doc(db,'slugs',slug)); if(!s.exists()) throw 0;
+    const uid = s.data().uid, [u, q] = await Promise.all([getDoc(doc(db,'users',uid)), getDocs(query(collection(db,'catalogs'),where('uid','==',uid)))]);
+    const p = u.data(), list = q.docs.map(d=>({id:d.id,...d.data()})).filter(c=>c.published!==false).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    document.title = `${p.name} — Essensia Catalog`;
+    updateDoc(doc(db,'users',uid), {views:increment(1)}).catch(()=>{});
+    const cats = ['Semua', ...new Set(list.map(c=>c.category).filter(Boolean))]; let cat='Semua', term='';
+    const draw = () => {
+      const f = list.filter(c => (cat==='Semua'||c.category===cat) && (c.title+c.desc).toLowerCase().includes(term));
+      $('#pg').innerHTML = f.length ? f.map(c=>itemCard(c,false)).join('') : '<div class="empty" style="grid-column:1/-1">Tidak ada aplikasi yang cocok.</div>';
+      $('#ch').innerHTML = cats.map(c=>`<button class="chip ${c===cat?'on':''}" data-c="${esc(c)}">${esc(c)}</button>`).join('');
+      $('#ch').querySelectorAll('button').forEach(b=>b.onclick=()=>{cat=b.dataset.c;draw()});
+      $('#pg').querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{ updateDoc(doc(db,'catalogs',b.dataset.open),{clicks:increment(1)}).catch(()=>{}); window.open(b.dataset.url,'_blank','noopener') });
+    };
+    app.innerHTML = `<div class="top"><img src="icons/icon-192.png" alt=""><div><h1>${esc(p.name)}</h1><p class="sub">${esc(p.bio)||'Katalog demo aplikasi'}</p></div></div>
+      <input id="q" type="search" placeholder="Cari aplikasi…" aria-label="Cari aplikasi"><div class="chips" id="ch" style="margin-top:10px"></div><div class="grid" id="pg"></div>
+      <p class="sub" style="text-align:center;margin-top:28px">Dibuat dengan Essensia Catalog</p>`;
+    $('#q').oninput = e => { term = e.target.value.toLowerCase(); draw() }; draw();
+  }catch(e){ app.innerHTML = '<div class="empty"><h1>Katalog tidak ditemukan</h1><p class="sub">Periksa kembali link yang kamu buka.</p></div>' }
+}
+
+/* ---------- start ---------- */
+const slugParam = new URLSearchParams(location.search).get('u');
+if(slugParam) showPublic(slugParam);
+else onAuthStateChanged(auth, async u => {
+  S.user = u;
+  if(!u) return showAuth();
+  try{ await loadProfile(); await loadItems(); show() }catch(e){ showAuth(errMsg(e)) }
+});
+</script>
+</body>
+</html>
