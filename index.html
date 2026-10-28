@@ -13,7 +13,7 @@
 :root{--blue:#0b63e5;--navy:#06236b;--sky:#e8f1ff;--bg:#f5f8fd;--card:#fff;--ink:#0f1b33;--mute:#62708a;--line:#dde5f2;--red:#d33;--ok:#14803c}
 :root[data-theme="dark"]{color-scheme:dark;--bg:#0b1220;--card:#131c30;--ink:#e8eefb;--mute:#97a6c4;--line:#24304a;--sky:#16264a}
 *{box-sizing:border-box;margin:0}
-body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:calc(100px + env(safe-area-inset-bottom));min-height:100vh}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:calc(92px + env(safe-area-inset-bottom));min-height:100vh}
 main{max-width:720px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 16px 24px}
 h1{font-size:1.5rem;letter-spacing:-.02em}h2{font-size:1.1rem;margin:20px 0 10px}
 p.sub{color:var(--mute);font-size:.9rem;margin-top:2px}
@@ -34,7 +34,7 @@ textarea{min-height:84px;resize:vertical}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>.grow{flex:1;min-width:0}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0 12px}.chip{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:6px 14px;border-radius:99px;white-space:nowrap;cursor:pointer;font:inherit;font-size:.85rem}.chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
 .empty{text-align:center;color:var(--mute);padding:36px 12px}.empty .btn{margin-top:12px}
-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));width:min(calc(100% - 32px),688px);background:var(--card);border:1px solid var(--line);border-radius:28px;box-shadow:0 8px 24px rgba(6,35,107,.16);display:flex;align-items:center;padding:6px;z-index:5}
+nav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(100%,720px);background:var(--card);border:1px solid var(--line);border-bottom:0;border-radius:28px 28px 0 0;box-shadow:0 -6px 24px rgba(6,35,107,.12);display:flex;align-items:center;padding:6px 8px calc(6px + env(safe-area-inset-bottom));z-index:5}
 nav button{flex:1;border:0;background:none;color:var(--mute);padding:8px 2px 7px;border-radius:20px;font:inherit;font-size:.68rem;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
 nav button svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 nav button.on{color:var(--blue);font-weight:700;background:var(--sky)}
@@ -51,6 +51,11 @@ nav button.add svg{width:26px;height:26px;stroke-width:2.4}
 #demo .dbar b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
 #demo .dbar .btn{padding:8px 12px;font-size:.85rem;white-space:nowrap}
 #demo iframe{flex:1;border:0;width:100%;background:#fff}
+.ib{border:0;background:var(--sky);color:var(--blue);width:42px;height:42px;border-radius:10px;display:grid;place-items:center;cursor:pointer;flex:none}
+.ib.del{color:var(--red)}.ib svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.item .b>.row{margin-top:4px}.item .b>.row .btn{padding:10px 14px}
+.pick{aspect-ratio:16/10;border:2px dashed var(--line);border-radius:14px;display:grid;place-items:center;color:var(--blue);font-weight:600;cursor:pointer;background:var(--card) center/cover no-repeat}
+.pick.has{border-style:solid}.pick.has span{display:none}
 .hide{display:none}
 .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.seg .chip{text-align:center;padding:10px 6px}
 </style>
@@ -165,10 +170,11 @@ function showAuth(msg=''){
 const errMsg = e => ({'auth/invalid-credential':'Email atau kata sandi salah.','auth/email-already-in-use':'Email sudah terdaftar. Coba masuk.','auth/weak-password':'Kata sandi minimal 6 karakter.','auth/invalid-email':'Format email tidak valid.','permission-denied':'Akses ditolak. Periksa Firestore Rules.'}[e.code] || e.message);
 
 /* ---------- halaman ---------- */
+const ICON = {edit:'<svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',del:'<svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>'};
 const itemCard = (c, admin) => `<div class="card item"><div class="thumb" style="${c.image?`background-image:url('${esc(c.image)}')`:''}">${c.image?'':esc((c.title||'?')[0].toUpperCase())}</div>
-  <div class="b">${c.category?`<span class="tag">${esc(c.category)}</span>`:''}<h3>${esc(c.title)}</h3><p>${esc(c.desc)}</p>
-  ${admin ? `<div class="row"><button class="btn alt grow" data-demo="${esc(safeUrl(c.url))}" data-title="${esc(c.title)}">Buka</button><button class="btn alt" data-edit="${c.id}">Ubah</button><button class="btn del" data-del="${c.id}">Hapus</button></div>`
-          : `<button class="btn" data-open="${c.id}" data-url="${esc(safeUrl(c.url))}" data-title="${esc(c.title)}">Coba demo</button>`}</div></div>`;
+  <div class="b">${c.category?`<span class="tag">${esc(c.category)}</span>`:''}<h3>${esc(c.title)}</h3>
+  ${admin ? `<div class="row"><button class="btn grow" data-demo="${esc(safeUrl(c.url))}" data-title="${esc(c.title)}">Buka</button><button class="ib" data-edit="${c.id}" aria-label="Ubah">${ICON.edit}</button><button class="ib del" data-del="${c.id}" aria-label="Hapus">${ICON.del}</button></div>`
+          : `<p>${esc(c.desc)}</p><button class="btn" data-open="${c.id}" data-url="${esc(safeUrl(c.url))}" data-title="${esc(c.title)}">Coba demo</button>`}</div></div>`;
 
 function pageBeranda(){
   const clicks = S.items.reduce((a,c)=>a+(c.clicks||0),0);
@@ -183,14 +189,16 @@ function pageCatalog(){
     (S.items.length ? `<div class="grid">${S.items.map(c=>itemCard(c,true)).join('')}</div>` : `<div class="card empty">Belum ada catalog.<br><button class="btn" data-go="tambah">Tambah catalog</button></div>`);
 }
 function pageTambah(){
-  const c = S.items.find(x=>x.id===S.editId) || {};
+  const c = S.items.find(x=>x.id===S.editId) || {}; S.img = c.image || '';
   return `<h1>${c.id?'Ubah catalog':'Tambah catalog'}</h1>
   <label for="f-title">Nama aplikasi</label><input id="f-title" value="${esc(c.title)}" maxlength="60">
   <label for="f-url">Link demo (GitHub Pages)</label><input id="f-url" type="url" value="${esc(c.url)}" placeholder="https://username.github.io/nama-repo/">
   <p class="sub" style="margin-top:4px">Boleh tempel link repo (github.com/user/repo), otomatis diubah ke link Pages-nya.</p>
   <label for="f-desc">Deskripsi singkat</label><textarea id="f-desc" maxlength="200">${esc(c.desc)}</textarea>
   <label for="f-cat">Kategori</label><input id="f-cat" value="${esc(c.category)}" placeholder="Contoh: Bisnis, Game, Edukasi" maxlength="24">
-  <label for="f-img">Link gambar sampul (opsional)</label><input id="f-img" type="url" value="${esc(c.image)}">
+  <label for="f-file">Gambar sampul (opsional)</label>
+  <label class="pick" id="pick" for="f-file"><span>＋ Pilih gambar</span></label><input id="f-file" type="file" accept="image/*" class="hide">
+  <button class="btn del" id="rmimg" type="button" style="padding:8px 0">Hapus gambar</button>
   <label for="f-pub">Tampilkan di halaman publik</label><select id="f-pub"><option value="1">Ya</option><option value="0" ${c.published===false?'selected':''}>Tidak (draf)</option></select>
   <div class="err" id="err"></div><button class="btn full" id="save">${c.id?'Simpan perubahan':'Simpan catalog'}</button>`;
 }
@@ -207,7 +215,8 @@ function pageSetting(){
   <h2>Tampilan</h2>
   <div class="seg" role="group" aria-label="Mode tampilan">${[['light','Terang'],['dark','Gelap'],['auto','Otomatis']].map(([k,l])=>`<button class="chip ${getTheme()===k?'on':''}" data-th="${k}">${l}</button>`).join('')}</div>
   <h2>Profil publik</h2>
-  <label for="s-name">Nama tampilan</label><input id="s-name" value="${esc(p.name)}" maxlength="40">
+  <label for="s-name">Nama tampilan (sapaan di Beranda)</label><input id="s-name" value="${esc(p.name)}" maxlength="40">
+  <label for="s-pub">Nama katalog publik</label><input id="s-pub" value="${esc(p.publicName ?? 'Essensia Dev')}" maxlength="40">
   <label for="s-bio">Bio</label><textarea id="s-bio" maxlength="160">${esc(p.bio)}</textarea>
   <label for="s-slug">Nama link (huruf kecil, angka, strip)</label><input id="s-slug" value="${esc(p.slug)}" placeholder="contoh: essensia" maxlength="30">
   ${p.slug?`<p class="sub" style="margin-top:8px">Link: <span class="link" style="display:inline-block">${esc(publicLink())}</span></p>`:''}
@@ -228,11 +237,19 @@ function show(){
   $('#cp')?.addEventListener('click',()=>navigator.clipboard.writeText(publicLink()).then(()=>toast('Link disalin')));
   $('#out')?.addEventListener('click',()=>signOut(auth));
   $('#save')?.addEventListener('click',saveItem);
+  if($('#pick')){ paintPick(); $('#f-file').onchange=pickImg; $('#rmimg').onclick=()=>{S.img='';paintPick()} }
   $('#saveS')?.addEventListener('click',saveSetting);
 }
+// Gambar dipotong rasio 16:10 (sesuai kotak biru), dikecilkan, lalu disimpan langsung di Firestore (tanpa Storage).
+const resizeImg = f => new Promise((ok,no)=>{ const im=new Image(), u=URL.createObjectURL(f);
+  im.onload=()=>{ const W=640,H=400,c=document.createElement('canvas'); c.width=W; c.height=H; const r=Math.max(W/im.width,H/im.height), w=im.width*r, h=im.height*r, x=c.getContext('2d');
+    x.fillStyle='#fff'; x.fillRect(0,0,W,H); x.drawImage(im,(W-w)/2,(H-h)/2,w,h); URL.revokeObjectURL(u); ok(c.toDataURL('image/jpeg',.82)) };
+  im.onerror=()=>no(new Error('File bukan gambar yang valid.')); im.src=u });
+function paintPick(){ const p=$('#pick'); p.style.backgroundImage=S.img?`url(${S.img})`:''; p.classList.toggle('has',!!S.img); $('#rmimg').classList.toggle('hide',!S.img) }
+async function pickImg(e){ const f=e.target.files[0]; if(!f) return; try{ S.img=await resizeImg(f); paintPick() }catch(x){ $('#err').textContent=x.message } e.target.value='' }
 async function saveItem(){
   const v = id => $('#'+id).value.trim(), err = $('#err');
-  const data = {title:v('f-title'), url:demoUrl(v('f-url')), desc:v('f-desc'), category:v('f-cat'), image:v('f-img'), published:$('#f-pub').value==='1'};
+  const data = {title:v('f-title'), url:demoUrl(v('f-url')), desc:v('f-desc'), category:v('f-cat'), image:S.img||'', published:$('#f-pub').value==='1'};
   if(!data.title) return err.textContent='Nama aplikasi wajib diisi.';
   if(!/^https?:\/\//i.test(data.url)) return err.textContent='Link demo harus diawali http:// atau https://';
   try{
@@ -242,7 +259,7 @@ async function saveItem(){
   }catch(e){ err.textContent = errMsg(e) }
 }
 async function saveSetting(){
-  const err=$('#err'), name=$('#s-name').value.trim(), bio=$('#s-bio').value.trim(), slug=slugify($('#s-slug').value);
+  const err=$('#err'), name=$('#s-name').value.trim(), pub=$('#s-pub').value.trim(), bio=$('#s-bio').value.trim(), slug=slugify($('#s-slug').value);
   if(!name) return err.textContent='Nama tampilan wajib diisi.';
   try{
     const old = S.profile.slug;
@@ -252,7 +269,7 @@ async function saveSetting(){
       await setDoc(doc(db,'slugs',slug), {uid:S.user.uid});
       if(old) await deleteDoc(doc(db,'slugs',old));
     }
-    S.profile = {...S.profile, name, bio, slug: slug || old};
+    S.profile = {...S.profile, name, publicName:pub, bio, slug: slug || old};
     await setDoc(doc(db,'users',S.user.uid), S.profile, {merge:true});
     show(); toast('Setting tersimpan');
   }catch(e){ err.textContent = errMsg(e) }
@@ -264,8 +281,8 @@ async function showPublic(slug){
   try{
     const s = await getDoc(doc(db,'slugs',slug)); if(!s.exists()) throw 0;
     const uid = s.data().uid, [u, q] = await Promise.all([getDoc(doc(db,'users',uid)), getDocs(query(collection(db,'catalogs'),where('uid','==',uid)))]);
-    const p = u.data(), list = q.docs.map(d=>({id:d.id,...d.data()})).filter(c=>c.published!==false).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-    document.title = `${p.name} — Essensia Catalog`;
+    const p = u.data(), pn = p.publicName || 'Essensia Dev', list = q.docs.map(d=>({id:d.id,...d.data()})).filter(c=>c.published!==false).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    document.title = `${pn} — Essensia Catalog`;
     updateDoc(doc(db,'users',uid), {views:increment(1)}).catch(()=>{});
     const cats = ['Semua', ...new Set(list.map(c=>c.category).filter(Boolean))]; let cat='Semua', term='';
     const draw = () => {
@@ -275,7 +292,7 @@ async function showPublic(slug){
       $('#ch').querySelectorAll('button').forEach(b=>b.onclick=()=>{cat=b.dataset.c;draw()});
       $('#pg').querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{ updateDoc(doc(db,'catalogs',b.dataset.open),{clicks:increment(1)}).catch(()=>{}); openDemo(b.dataset.url,b.dataset.title) });
     };
-    app.innerHTML = `<div class="top"><img src="${LOGO}" alt=""><div><h1>${esc(p.name)}</h1><p class="sub">${esc(p.bio)||'Katalog demo aplikasi'}</p></div></div>
+    app.innerHTML = `<div class="top"><img src="${LOGO}" alt=""><div><h1>${esc(pn)}</h1><p class="sub">${esc(p.bio)||'Katalog demo aplikasi'}</p></div></div>
       <input id="q" type="search" placeholder="Cari aplikasi…" aria-label="Cari aplikasi"><div class="chips" id="ch" style="margin-top:10px"></div><div class="grid" id="pg"></div>
       <p class="sub" style="text-align:center;margin-top:28px">Dibuat dengan Essensia Catalog</p>`;
     $('#q').oninput = e => { term = e.target.value.toLowerCase(); draw() }; draw();
