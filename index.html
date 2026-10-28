@@ -86,7 +86,7 @@ const $ = s => document.querySelector(s), app = $('#app'), nav = $('#nav');
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const slugify = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,30);
 const safeUrl = u => /^https?:\/\//i.test(u) ? u : '#';
-const base = () => location.origin + location.pathname;
+const base = () => location.origin + location.pathname.replace(/[^\/]*$/,'');
 function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2200)}
 /* ---------- viewer demo (aplikasi terbuka di dalam Essensia) ---------- */
 // Link repo github.com/user/repo otomatis diubah ke link GitHub Pages: user.github.io/repo/
@@ -143,7 +143,7 @@ async function loadProfile(){
     await setDoc(doc(db,'users',S.user.uid), S.profile);
   }
 }
-const publicLink = () => S.profile.slug ? `${base()}?u=${S.profile.slug}` : '';
+const publicLink = () => S.profile.slug ? `${base()}${S.profile.slug}` : '';
 
 /* ---------- login ---------- */
 function showAuth(msg=''){
@@ -284,7 +284,7 @@ async function showPublic(slug){
 
 /* ---------- start ---------- */
 const slugParam = new URLSearchParams(location.search).get('u');
-if(slugParam) showPublic(slugParam);
+if(slugParam){ showPublic(slugParam); history.replaceState(null,'',base()+slugParam) } // link rapi: /Catalog/nama-link (lewat 404.html)
 else onAuthStateChanged(auth, async u => {
   S.user = u;
   if(!u) return showAuth();

@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8"><title>Essensia Catalog</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body>
+<script>
+// GitHub Pages tidak punya rewrite. File ini mengubah /Catalog/nama-link menjadi /Catalog/?u=nama-link
+(function(){
+  var p = location.pathname, i = p.indexOf('/', 1), repo = p.slice(0, i + 1);
+  var slug = p.slice(repo.length).replace(/\/+$/, '');
+  location.replace(repo + (slug ? '?u=' + encodeURIComponent(slug) : ''));
+})();
+</script>
+<noscript>Aktifkan JavaScript untuk membuka Essensia Catalog.</noscript>
+</body></html>
